@@ -23,16 +23,17 @@ class DelayQueueWaiterTest {
 
     @Test
     void test_non_repeating() throws InterruptedException {
-        delayQueueWaiter.add(new DelayObject(1000, false, this::consumer));
         delayQueueWaiter.add(new DelayObject(5000, false, this::consumer));
+        delayQueueWaiter.add(new DelayObject(1000, false, this::consumer));
+        delayQueueWaiter.add(new DelayObject(500, false, this::consumer));
 
         delayQueueWaiter.debugPrint();
         Thread.sleep(3000);
-        assertEquals(1, consumed);
+        assertEquals(2, consumed);
 
         delayQueueWaiter.debugPrint();
         Thread.sleep(2000);
-        assertEquals(2, consumed);
+        assertEquals(3, consumed);
 
         delayQueueWaiter.debugPrint();
     }
