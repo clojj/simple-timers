@@ -6,48 +6,48 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-class DelayQueueWaiterTest {
+class DelayQueueSchedulerTest {
 
-    private DelayQueueWaiter delayQueueWaiter;
+    private DelayQueueScheduler delayQueueScheduler;
     private int consumed;
 
     @BeforeEach
     void setUp() {
-        delayQueueWaiter = new DelayQueueWaiter(true);
+        delayQueueScheduler = new DelayQueueScheduler(true);
     }
 
     @AfterEach
     void tearDown() {
-        delayQueueWaiter.stop();
+        delayQueueScheduler.stop();
     }
 
     @Test
     void test_non_repeating() throws InterruptedException {
-        delayQueueWaiter.add(new DelayObject(5000, false, this::consumer));
-        delayQueueWaiter.add(new DelayObject(1000, false, this::consumer));
-        delayQueueWaiter.add(new DelayObject(500, false, this::consumer));
+        delayQueueScheduler.add(new TimerObject(5000, false, this::consumer));
+        delayQueueScheduler.add(new TimerObject(1000, false, this::consumer));
+        delayQueueScheduler.add(new TimerObject(500, false, this::consumer));
 
-        delayQueueWaiter.debugPrint();
+        delayQueueScheduler.debugPrint();
         Thread.sleep(3000);
         assertEquals(2, consumed);
 
-        delayQueueWaiter.debugPrint();
+        delayQueueScheduler.debugPrint();
         Thread.sleep(2000);
         assertEquals(3, consumed);
 
-        delayQueueWaiter.debugPrint();
+        delayQueueScheduler.debugPrint();
     }
 
     @Test
     void test_repeating() throws InterruptedException {
-        delayQueueWaiter.add(new DelayObject(1000, true, this::consumer));
-        delayQueueWaiter.debugPrint();
+        delayQueueScheduler.add(new TimerObject(1000, true, this::consumer));
+        delayQueueScheduler.debugPrint();
         Thread.sleep(2000);
         assertEquals(1, consumed);
-        delayQueueWaiter.debugPrint();
+        delayQueueScheduler.debugPrint();
         Thread.sleep(1000);
         assertEquals(2, consumed);
-        delayQueueWaiter.debugPrint();
+        delayQueueScheduler.debugPrint();
     }
 
     private void consumer(Long time) {

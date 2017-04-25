@@ -4,13 +4,13 @@ import java.util.concurrent.Delayed;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
-public class DelayObject implements Delayed {
+public class TimerObject implements Delayed {
     private final long delayFromNow;
     private long startTime;
     private final boolean repeat;
     private final Consumer<Long> consumer;
 
-    public DelayObject(long delayFromNow, boolean repeat, Consumer<Long> consumer) {
+    public TimerObject(long delayFromNow, boolean repeat, Consumer<Long> consumer) {
         this.delayFromNow = delayFromNow;
         this.startTime = System.currentTimeMillis() + this.delayFromNow;
         this.repeat = repeat;
@@ -29,10 +29,10 @@ public class DelayObject implements Delayed {
 
     @Override
     public int compareTo(Delayed o) {
-        if (this.startTime < ((DelayObject) o).startTime) {
+        if (this.startTime < ((TimerObject) o).startTime) {
             return -1;
         }
-        if (this.startTime > ((DelayObject) o).startTime) {
+        if (this.startTime > ((TimerObject) o).startTime) {
             return 1;
         }
         return 0;
