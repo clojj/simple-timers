@@ -1,7 +1,13 @@
 package de.clojj.simpletimers;
 
+import java.util.Collection;
+import java.util.function.Consumer;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
+
 
 class DelayQueueSchedulerDrainingTest {
 
@@ -18,21 +24,19 @@ class DelayQueueSchedulerDrainingTest {
 
     @Test
     void test_by_draining() throws InterruptedException {
-	    delayQueueScheduler.add(new TimerObjectMillis(5000, false, this::consumer));
-	    delayQueueScheduler.add(new TimerObjectMillis(1000, false, this::consumer));
-	    delayQueueScheduler.add(new TimerObjectMillis(500, false, this::consumer));
-	    delayQueueScheduler.add(new TimerObjectMillis(500, false, this::consumer));
-	    delayQueueScheduler.add(new TimerObjectMillis(500, false, this::consumer));
-
+	    Consumer<Long> devNull = aLong -> {};
+	    delayQueueScheduler.add(new TimerObjectMillis(5000, false, devNull));
+	    delayQueueScheduler.add(new TimerObjectMillis(1000, false, devNull));
+	    delayQueueScheduler.add(new TimerObjectMillis(500, false, devNull));
+	    delayQueueScheduler.add(new TimerObjectMillis(500, false, devNull));
+	    delayQueueScheduler.add(new TimerObjectMillis(500, false, devNull));
 	    delayQueueScheduler.debugPrint();
+
 	    Thread.sleep(2000);
-	    int drained = delayQueueScheduler.drainAllTimers();
+	    Collection<TimerObject> drained = delayQueueScheduler.drainAllTimers();
         delayQueueScheduler.debugPrint("after draining " + drained);
-    }
 
-    private void consumer(Long time) {
-        System.out.println("    time = " + time);
-        consumed++;
+        assertEquals(4, drained.size());
+        assertEquals(1, delayQueueScheduler.size());
     }
-
 }

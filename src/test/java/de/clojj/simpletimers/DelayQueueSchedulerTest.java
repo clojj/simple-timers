@@ -39,21 +39,42 @@ class DelayQueueSchedulerTest {
         delayQueueScheduler.add(new TimerObjectMillis(500, false, this::consumer));
         delayQueueScheduler.add(new TimerObjectMillis(500, false, this::consumer));
         delayQueueScheduler.add(new TimerObjectMillis(500, false, this::consumer));
-
         delayQueueScheduler.debugPrint();
+
         Thread.sleep(2000);
         delayQueueScheduler.debugPrint();
         assertEquals(4, consumed);
 
-        delayQueueScheduler.debugPrint();
         Thread.sleep(4000);
-        assertEquals(5, consumed);
-
-        delayQueueScheduler.debugPrint();
+	    delayQueueScheduler.debugPrint();
+	    assertEquals(5, consumed);
     }
 
     @Test
-    void test_non_repeating_coninciding_ordered() throws InterruptedException {
+    void test_deactivate_by_removing() throws InterruptedException {
+	    TimerObjectMillis timerObjectToDeactivate = new TimerObjectMillis(5000, false, this::consumer);
+	    delayQueueScheduler.add(timerObjectToDeactivate);
+        delayQueueScheduler.add(new TimerObjectMillis(1000, false, this::consumer));
+        delayQueueScheduler.add(new TimerObjectMillis(500, false, this::consumer));
+        delayQueueScheduler.add(new TimerObjectMillis(500, false, this::consumer));
+        delayQueueScheduler.add(new TimerObjectMillis(500, false, this::consumer));
+        delayQueueScheduler.debugPrint();
+
+        Thread.sleep(2000);
+	    delayQueueScheduler.debugPrint();
+	    assertEquals(4, consumed);
+
+	    boolean deactivated = delayQueueScheduler.deactivate(timerObjectToDeactivate);
+	    assertTrue(deactivated);
+	    delayQueueScheduler.debugPrint();
+
+        Thread.sleep(4000);
+	    delayQueueScheduler.debugPrint();
+        assertEquals(4, consumed);
+    }
+
+    @Test
+    void test_coninciding_ordered() throws InterruptedException {
         List<Integer> results = new ArrayList<>();
         delayQueueScheduler.add(new TimerObjectNano(DELAY_NANOS, false, createNumberedConsumer(2, results)));
         delayQueueScheduler.add(new TimerObjectNano(DELAY_NANOS, false, createNumberedConsumer(3, results)));

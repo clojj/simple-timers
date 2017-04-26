@@ -26,10 +26,10 @@ public class DelayQueueScheduler {
 		}
 	}
 
-	public int drainAllTimers() {
+	public Collection<TimerObject> drainAllTimers() {
 	    final Collection<TimerObject> expiredList = new ArrayList<>();
-		int drained = delayQueue.drainTo(expiredList);
-		return drained;
+		delayQueue.drainTo(expiredList);
+		return expiredList;
 	}
 
 	public synchronized boolean add(TimerObject timerObject) {
@@ -50,6 +50,14 @@ public class DelayQueueScheduler {
 		for (TimerObject timerObject : delayQueue) {
 			System.out.println("delayObject = " + timerObject);
 		}
+	}
+
+	public boolean deactivate(final TimerObject toDeactivate) {
+		return delayQueue.remove(toDeactivate);
+	}
+
+	public int size() {
+		return delayQueue.size();
 	}
 
 	private class Waiter implements Runnable {
