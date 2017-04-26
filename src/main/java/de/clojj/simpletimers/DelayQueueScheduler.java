@@ -11,7 +11,7 @@ public class DelayQueueScheduler {
     private final DelayQueue<TimerObject> delayQueue;
 
     public DelayQueueScheduler(boolean isDaemon) {
-        delayQueue = new DelayQueue<TimerObject>();
+        delayQueue = new DelayQueue<>();
 
         thread = new Thread(new Waiter(), this.getClass().getName());
         thread.setPriority(Thread.MIN_PRIORITY);
@@ -28,11 +28,11 @@ public class DelayQueueScheduler {
         thread.interrupt();
     }
 
-    public synchronized void debugPrint() {
+    public synchronized void debugPrint(String message) {
+        System.out.println(message != null ? message : "timers:");
         for (TimerObject timerObject : delayQueue) {
             System.out.println("delayObject = " + timerObject);
         }
-
     }
 
     private class Waiter implements Runnable {
@@ -53,14 +53,12 @@ public class DelayQueueScheduler {
                         delayQueue.add(timerObject);
                     }
                 }
-
             } catch (InterruptedException e) {
                 if (!shutdown) {
                     e.printStackTrace();
                 }
             }
         }
-
     }
 
 }
