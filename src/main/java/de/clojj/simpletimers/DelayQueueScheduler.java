@@ -1,64 +1,81 @@
 package de.clojj.simpletimers;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.concurrent.DelayQueue;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class DelayQueueScheduler {
 
-    private boolean shutdown = false;
+	private boolean shutdown = false;
 
-    private final Thread thread;
+	private Thread thread = null;
 
-    private final DelayQueue<TimerObject> delayQueue;
+	private final DelayQueue<TimerObject> delayQueue;
 
-    public DelayQueueScheduler(boolean isDaemon) {
-        delayQueue = new DelayQueue<>();
+	private final transient ReentrantLock lock = new ReentrantLock();
 
-        thread = new Thread(new Waiter(), this.getClass().getName());
-        thread.setPriority(Thread.MIN_PRIORITY);
-        thread.setDaemon(isDaemon);
-        thread.start();
-    }
 
-    public synchronized boolean add(TimerObject timerObject) {
-        return delayQueue.add(timerObject);
-    }
+	public DelayQueueScheduler(boolean start, boolean isDaemon) {
+		delayQueue = new DelayQueue<>();
+		if (start) {
+			thread = new Thread(new Waiter(), this.getClass().getName());
+			thread.setPriority(Thread.MIN_PRIORITY);
+			thread.setDaemon(isDaemon);
+			thread.start();
+		}
+	}
 
-    public synchronized void stop() {
-        shutdown = true;
-        thread.interrupt();
-    }
+	public int drainAllTimers() {
+	    final Collection<TimerObject> expiredList = new ArrayList<>();
+		int drained = delayQueue.drainTo(expiredList);
+		return drained;
+	}
 
-    public synchronized void debugPrint(String message) {
-        System.out.println(message != null ? message : "timers:");
-        for (TimerObject timerObject : delayQueue) {
-            System.out.println("delayObject = " + timerObject);
-        }
-    }
+	public synchronized boolean add(TimerObject timerObject) {
+		return delayQueue.add(timerObject);
+	}
 
-    private class Waiter implements Runnable {
+	public synchronized void stop() {
+		shutdown = true;
+		thread.interrupt();
+	}
 
-        public void run() {
-            try {
-                while (!Thread.interrupted()) {
-                    TimerObject timerObject = delayQueue.take();
+	public void debugPrint() {
+		debugPrint("timers:");
+	}
 
-                    // 1) callback object
-                    timerObject.getConsumer().accept(System.currentTimeMillis());
+	public void debugPrint(String message) {
+		System.out.println(message != null ? message : "timers:");
+		for (TimerObject timerObject : delayQueue) {
+			System.out.println("delayObject = " + timerObject);
+		}
+	}
 
-                    // 2) TODO create global callback
-                    // this should enable monitoring all Timer-events (JMX, CDI, ...?)
+	private class Waiter implements Runnable {
 
-                    if (timerObject.isRepeat()) {
-                        timerObject.reset();
-                        delayQueue.add(timerObject);
-                    }
-                }
-            } catch (InterruptedException e) {
-                if (!shutdown) {
-                    e.printStackTrace();
-                }
-            }
-        }
-    }
+		public void run() {
+			try {
+				while (!Thread.interrupted()) {
+					TimerObject timerObject = delayQueue.take();
+
+					// 1) callback object
+					timerObject.getConsumer().accept(System.nanoTime());
+
+					// 2) TODO create global callback
+					// this should enable monitoring all Timer-events (JMX, CDI, ...?)
+
+					if (timerObject.isRepeat()) {
+						timerObject.reset();
+						delayQueue.add(timerObject);
+					}
+				}
+			} catch (InterruptedException e) {
+				if (!shutdown) {
+					e.printStackTrace();
+				}
+			}
+		}
+	}
 
 }

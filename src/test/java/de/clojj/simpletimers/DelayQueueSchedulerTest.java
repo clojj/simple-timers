@@ -1,15 +1,18 @@
 package de.clojj.simpletimers;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.function.Consumer;
+import java.util.function.IntBinaryOperator;
+import java.util.function.IntFunction;
+import java.util.function.IntUnaryOperator;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.function.*;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 class DelayQueueSchedulerTest {
 
@@ -20,7 +23,7 @@ class DelayQueueSchedulerTest {
 
     @BeforeEach
     void setUp() {
-        delayQueueScheduler = new DelayQueueScheduler(true);
+        delayQueueScheduler = new DelayQueueScheduler(true, true);
         delayQueueScheduler.debugPrint("initial timers:");
     }
 
@@ -37,37 +40,28 @@ class DelayQueueSchedulerTest {
         delayQueueScheduler.add(new TimerObjectMillis(500, false, this::consumer));
         delayQueueScheduler.add(new TimerObjectMillis(500, false, this::consumer));
 
-        delayQueueScheduler.debugPrint(null);
-        Thread.sleep(3000);
-        delayQueueScheduler.debugPrint(null);
+        delayQueueScheduler.debugPrint();
+        Thread.sleep(2000);
+        delayQueueScheduler.debugPrint();
         assertEquals(4, consumed);
 
-        delayQueueScheduler.debugPrint(null);
-        Thread.sleep(2000);
+        delayQueueScheduler.debugPrint();
+        Thread.sleep(4000);
         assertEquals(5, consumed);
 
-        delayQueueScheduler.debugPrint(null);
+        delayQueueScheduler.debugPrint();
     }
 
     @Test
     void test_non_repeating_coninciding_ordered() throws InterruptedException {
         List<Integer> results = new ArrayList<>();
-        delayQueueScheduler.add(new TimerObjectNano(DELAY_NANOS, false, aLong -> {
-            System.out.println("2 - " + aLong);
-            results.add(2);
-        }));
-        delayQueueScheduler.add(new TimerObjectNano(DELAY_NANOS, false, aLong -> {
-            System.out.println("3 - " + aLong);
-            results.add(3);
-        }));
-        delayQueueScheduler.add(new TimerObjectNano(DELAY_NANOS, false, aLong -> {
-            System.out.println("1 - " + aLong);
-            results.add(1);
-        }));
+        delayQueueScheduler.add(new TimerObjectNano(DELAY_NANOS, false, createNumberedConsumer(2, results)));
+        delayQueueScheduler.add(new TimerObjectNano(DELAY_NANOS, false, createNumberedConsumer(3, results)));
+        delayQueueScheduler.add(new TimerObjectNano(DELAY_NANOS, false, createNumberedConsumer(1, results)));
 
-        delayQueueScheduler.debugPrint(null);
+        delayQueueScheduler.debugPrint();
         Thread.sleep(2000);
-        delayQueueScheduler.debugPrint(null);
+        delayQueueScheduler.debugPrint();
 
         List<Integer> expected = new ArrayList<>();
         Collections.addAll(expected, 2, 3, 1);
@@ -77,13 +71,13 @@ class DelayQueueSchedulerTest {
     @Test
     void test_repeating() throws InterruptedException {
         delayQueueScheduler.add(new TimerObjectMillis(1000, true, this::consumer));
-        delayQueueScheduler.debugPrint(null);
+        delayQueueScheduler.debugPrint();
         Thread.sleep(2000);
         assertEquals(1, consumed);
-        delayQueueScheduler.debugPrint(null);
+        delayQueueScheduler.debugPrint();
         Thread.sleep(1000);
         assertEquals(2, consumed);
-        delayQueueScheduler.debugPrint(null);
+        delayQueueScheduler.debugPrint();
     }
 
     private void consumer(Long time) {
@@ -91,7 +85,13 @@ class DelayQueueSchedulerTest {
         consumed++;
     }
 
-    @Test
+    Consumer<Long> createNumberedConsumer(int n, List<Integer> result) {
+    	return aLong -> {
+		    System.out.println("consumer " + n + " receives " + aLong);
+		    result.add(n);
+	    };
+    }
+
     public void currying() {
         // Create a function that adds 2 ints
         IntBinaryOperator adder = (a, b) -> a + b;
@@ -104,14 +104,5 @@ class DelayQueueSchedulerTest {
 
         // Results
         System.out.printf("int curry : %d\n", curried.applyAsInt(3)); // ( 4 + 3 )
-
-        // TODO
-        LongBinaryOperator lAdder = (a, b) -> a + b;
-        LongFunction<LongConsumer> lCurrier = a -> b -> lAdder.applyAsLong(a, b);
-        LongConsumer lCurried = lCurrier.apply(1);
-
-        lCurried.accept(3);
-
-
     }
 }
