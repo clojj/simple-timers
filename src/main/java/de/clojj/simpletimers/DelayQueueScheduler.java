@@ -14,16 +14,18 @@ public class DelayQueueScheduler {
 	private final DelayQueue<TimerObject> delayQueue;
 
 	private final transient ReentrantLock lock = new ReentrantLock();
+	private TimerThread timerThread;
 
 
-	public DelayQueueScheduler(boolean start, boolean isDaemon) {
+	public DelayQueueScheduler() {
 		delayQueue = new DelayQueue<>();
-		if (start) {
-			thread = new Thread(new Waiter(), this.getClass().getName());
-			thread.setPriority(Thread.MIN_PRIORITY);
-			thread.setDaemon(isDaemon);
-			thread.start();
-		}
+	}
+
+	public Thread createDefaultThread(boolean isDaemon, Runnable runnable) {
+		Thread thread = new Thread(runnable, "DelayQueueScheduler thread");
+		thread.setPriority(Thread.MIN_PRIORITY);
+		thread.setDaemon(isDaemon);
+		return thread;
 	}
 
 	public Collection<TimerObject> drainAllTimers() {
@@ -32,11 +34,16 @@ public class DelayQueueScheduler {
 		return expiredList;
 	}
 
-	public synchronized boolean add(TimerObject timerObject) {
+	public boolean add(TimerObject timerObject) {
 		return delayQueue.add(timerObject);
 	}
 
-	public synchronized void stop() {
+	public void startWith(Thread thread) {
+		this.thread = thread;
+		thread.start();
+	}
+
+	public void stop() {
 		shutdown = true;
 		thread.interrupt();
 	}
@@ -60,7 +67,15 @@ public class DelayQueueScheduler {
 		return delayQueue.size();
 	}
 
-	private class Waiter implements Runnable {
+	public TimerThread timerThreadInstance() {
+		if (timerThread == null) {
+			timerThread = new TimerThread();
+		}
+		return timerThread;
+
+	}
+
+	public class TimerThread implements Runnable {
 
 		public void run() {
 			try {

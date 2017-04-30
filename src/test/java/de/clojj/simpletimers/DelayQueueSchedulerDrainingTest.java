@@ -1,12 +1,12 @@
 package de.clojj.simpletimers;
 
-import java.util.Collection;
-import java.util.function.Consumer;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
+import java.util.Collection;
+import java.util.function.Consumer;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 
 class DelayQueueSchedulerDrainingTest {
@@ -18,7 +18,7 @@ class DelayQueueSchedulerDrainingTest {
 
     @BeforeEach
     void setUp() {
-	    delayQueueScheduler = new DelayQueueScheduler(false, false);
+	    delayQueueScheduler = new DelayQueueScheduler( );
 	    delayQueueScheduler.debugPrint("initial timers:");
     }
 
