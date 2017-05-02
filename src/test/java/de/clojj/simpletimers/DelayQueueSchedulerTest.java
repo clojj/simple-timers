@@ -1,5 +1,9 @@
 package de.clojj.simpletimers;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -8,11 +12,8 @@ import java.util.function.IntBinaryOperator;
 import java.util.function.IntFunction;
 import java.util.function.IntUnaryOperator;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class DelayQueueSchedulerTest {
 
@@ -23,7 +24,9 @@ class DelayQueueSchedulerTest {
 
     @BeforeEach
     void setUp() {
-        delayQueueScheduler = new DelayQueueScheduler(true, true);
+        delayQueueScheduler = new DelayQueueScheduler();
+        Thread defaultThread = delayQueueScheduler.createDefaultThread(true, delayQueueScheduler.timerThreadInstance());
+        delayQueueScheduler.startWith(defaultThread);
         delayQueueScheduler.debugPrint("initial timers:");
     }
 
@@ -46,14 +49,14 @@ class DelayQueueSchedulerTest {
         assertEquals(4, consumed);
 
         Thread.sleep(4000);
-	    delayQueueScheduler.debugPrint();
-	    assertEquals(5, consumed);
+        delayQueueScheduler.debugPrint();
+        assertEquals(5, consumed);
     }
 
     @Test
     void test_deactivate_by_removing() throws InterruptedException {
-	    TimerObjectMillis timerObjectToDeactivate = new TimerObjectMillis(5000, false, this::consumer);
-	    delayQueueScheduler.add(timerObjectToDeactivate);
+        TimerObjectMillis timerObjectToDeactivate = new TimerObjectMillis(5000, false, this::consumer);
+        delayQueueScheduler.add(timerObjectToDeactivate);
         delayQueueScheduler.add(new TimerObjectMillis(1000, false, this::consumer));
         delayQueueScheduler.add(new TimerObjectMillis(500, false, this::consumer));
         delayQueueScheduler.add(new TimerObjectMillis(500, false, this::consumer));
@@ -61,15 +64,15 @@ class DelayQueueSchedulerTest {
         delayQueueScheduler.debugPrint();
 
         Thread.sleep(2000);
-	    delayQueueScheduler.debugPrint();
-	    assertEquals(4, consumed);
+        delayQueueScheduler.debugPrint();
+        assertEquals(4, consumed);
 
-	    boolean deactivated = delayQueueScheduler.deactivate(timerObjectToDeactivate);
-	    assertTrue(deactivated);
-	    delayQueueScheduler.debugPrint();
+        boolean deactivated = delayQueueScheduler.deactivate(timerObjectToDeactivate);
+        assertTrue(deactivated);
+        delayQueueScheduler.debugPrint();
 
         Thread.sleep(4000);
-	    delayQueueScheduler.debugPrint();
+        delayQueueScheduler.debugPrint();
         assertEquals(4, consumed);
     }
 
@@ -107,10 +110,10 @@ class DelayQueueSchedulerTest {
     }
 
     Consumer<Long> createNumberedConsumer(int n, List<Integer> result) {
-    	return aLong -> {
-		    System.out.println("consumer " + n + " receives " + aLong);
-		    result.add(n);
-	    };
+        return aLong -> {
+            System.out.println("consumer " + n + " receives " + aLong);
+            result.add(n);
+        };
     }
 
     public void currying() {
