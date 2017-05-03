@@ -17,20 +17,20 @@ public class TimerObjectCron implements TimerObject {
 
 	public TimerObjectCron(Cron cron, Consumer<Long> consumer) {
 		this.cron = cron;
-		this.consumer = consumer;
 		this.startTime = ExecutionTime.forCron(cron).nextExecution(ZonedDateTime.now()).toInstant().toEpochMilli();
 		this.repeat = cron.retrieveFieldsAsMap().values().stream().anyMatch(cronField -> cronField.getExpression() instanceof Every);
+		this.consumer = consumer;
 	}
 
 	@Override
 	public void reset() {
-		this.startTime = System.currentTimeMillis() + ExecutionTime.forCron(cron).timeToNextExecution(ZonedDateTime.now()).toMillis();
+		this.startTime = ExecutionTime.forCron(cron).nextExecution(ZonedDateTime.now()).toInstant().toEpochMilli();
 	}
 
 	@Override
 	public long getDelay(TimeUnit unit) {
-		long diff = startTime - System.currentTimeMillis();
-		return unit.convert(diff, TimeUnit.MILLISECONDS);
+		long delta = startTime - System.currentTimeMillis();
+		return unit.convert(delta, TimeUnit.MILLISECONDS);
 	}
 
 	@Override
@@ -58,9 +58,9 @@ public class TimerObjectCron implements TimerObject {
 	public String toString() {
 		return "TimerObjectCron{" +
 				"startTime=" + startTime +
-				", cron=" + cron.asString() +
-				", repeat=" + repeat +
 				", consumer=" + consumer +
+				", cron=" + cron +
+				", repeat=" + repeat +
 				'}';
 	}
 }
