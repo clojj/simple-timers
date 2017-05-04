@@ -11,7 +11,7 @@ import java.util.function.Consumer;
 
 public class TimerObjectCron implements TimerObject {
 	private long startTime;
-	private final Consumer<Long> consumer;
+	private Consumer<Long> consumer;
 	private Cron cron;
 	private final boolean repeat;
 
@@ -19,6 +19,16 @@ public class TimerObjectCron implements TimerObject {
 		this.cron = cron;
 		this.startTime = ExecutionTime.forCron(cron).nextExecution(ZonedDateTime.now()).toInstant().toEpochMilli();
 		this.repeat = cron.retrieveFieldsAsMap().values().stream().anyMatch(cronField -> cronField.getExpression() instanceof Every);
+		this.consumer = consumer;
+	}
+
+	public TimerObjectCron(Cron cron) {
+		this.cron = cron;
+		this.startTime = ExecutionTime.forCron(cron).nextExecution(ZonedDateTime.now()).toInstant().toEpochMilli();
+		this.repeat = cron.retrieveFieldsAsMap().values().stream().anyMatch(cronField -> cronField.getExpression() instanceof Every);
+	}
+
+	public void setConsumer(Consumer<Long> consumer) {
 		this.consumer = consumer;
 	}
 
