@@ -4,6 +4,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.Collection;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -25,11 +26,11 @@ class DelayQueueSchedulerDrainingTest {
     @Test
     void test_by_draining() throws InterruptedException {
 	    Consumer<Long> devNull = aLong -> {};
-	    delayQueueScheduler.add(new TimerObjectMillis(5000, false, devNull));
-	    delayQueueScheduler.add(new TimerObjectMillis(1000, false, devNull));
-	    delayQueueScheduler.add(new TimerObjectMillis(500, false, devNull));
-	    delayQueueScheduler.add(new TimerObjectMillis(500, false, devNull));
-	    delayQueueScheduler.add(new TimerObjectMillis(500, false, devNull));
+	    delayQueueScheduler.add(new TimerObjectInterval(5000, TimeUnit.MILLISECONDS, false, devNull));
+	    delayQueueScheduler.add(new TimerObjectInterval(1000, TimeUnit.MILLISECONDS, false, devNull));
+	    delayQueueScheduler.add(new TimerObjectInterval(500, TimeUnit.MILLISECONDS, false, devNull));
+	    delayQueueScheduler.add(new TimerObjectInterval(500, TimeUnit.MILLISECONDS, false, devNull));
+	    delayQueueScheduler.add(new TimerObjectInterval(500, TimeUnit.MILLISECONDS, false, devNull));
 	    delayQueueScheduler.debugPrint();
 
 	    Thread.sleep(2000);
