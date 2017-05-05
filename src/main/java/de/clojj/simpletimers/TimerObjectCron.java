@@ -1,13 +1,13 @@
 package de.clojj.simpletimers;
 
-import com.cronutils.model.Cron;
-import com.cronutils.model.field.expression.Every;
-import com.cronutils.model.time.ExecutionTime;
-
 import java.time.ZonedDateTime;
 import java.util.concurrent.Delayed;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
+
+import com.cronutils.model.Cron;
+import com.cronutils.model.field.expression.Every;
+import com.cronutils.model.time.ExecutionTime;
 
 public class TimerObjectCron implements TimerObject {
 	private long startTime;
@@ -62,6 +62,14 @@ public class TimerObjectCron implements TimerObject {
 	@Override
 	public boolean isRepeat() {
 		return repeat;
+	}
+
+	public long getStartTime() {
+		return startTime;
+	}
+
+	public Cron getCron() {
+		return cron;
 	}
 
 	@Override

@@ -2,8 +2,9 @@ package de.clojj.simpletimers;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.SortedMap;
+import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.DelayQueue;
-import java.util.concurrent.locks.ReentrantLock;
 
 public class DelayQueueScheduler {
 
@@ -13,7 +14,8 @@ public class DelayQueueScheduler {
 
 	private final DelayQueue<TimerObject> delayQueue;
 
-	private final transient ReentrantLock lock = new ReentrantLock();
+	private SortedMap<TimerObject, Long> timers = new ConcurrentSkipListMap<>();
+
 	private TimerThread timerThread;
 
 
@@ -28,6 +30,10 @@ public class DelayQueueScheduler {
 		return thread;
 	}
 
+	public SortedMap<TimerObject, Long> getTimers() {
+		return timers;
+	}
+
 	public Collection<TimerObject> drainAllTimers() {
 	    final Collection<TimerObject> expiredList = new ArrayList<>();
 		delayQueue.drainTo(expiredList);
@@ -35,6 +41,7 @@ public class DelayQueueScheduler {
 	}
 
 	public boolean add(TimerObject timerObject) {
+		timers.put(timerObject, System.nanoTime());
 		return delayQueue.add(timerObject);
 	}
 
