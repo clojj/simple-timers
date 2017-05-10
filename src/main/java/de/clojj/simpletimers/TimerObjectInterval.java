@@ -19,6 +19,11 @@ public class TimerObjectInterval implements TimerObject {
         this.consumer = consumer;
     }
 
+    @Override
+    public String getId() {
+        return "42";
+    }
+
     public void reset() {
         this.startTime = currentTime(timeUnit) + interval;
     }

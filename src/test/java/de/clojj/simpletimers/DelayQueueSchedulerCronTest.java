@@ -1,5 +1,13 @@
 package de.clojj.simpletimers;
 
+import com.cronutils.model.Cron;
+import com.cronutils.model.CronType;
+import com.cronutils.model.definition.CronDefinitionBuilder;
+import com.cronutils.parser.CronParser;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -8,17 +16,7 @@ import java.util.function.IntBinaryOperator;
 import java.util.function.IntFunction;
 import java.util.function.IntUnaryOperator;
 
-import com.cronutils.model.Cron;
-import com.cronutils.model.CronType;
-import com.cronutils.model.definition.CronDefinitionBuilder;
-import com.cronutils.parser.CronParser;
-import jdk.nashorn.internal.ir.annotations.Ignore;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
-import static org.assertj.core.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class DelayQueueSchedulerCronTest {
 
@@ -42,7 +40,7 @@ class DelayQueueSchedulerCronTest {
 
 	@Test
 	void test_repeating() throws InterruptedException {
-		delayQueueScheduler.add(new TimerObjectCron(CRON, this::consumer));
+		delayQueueScheduler.add(new TimerObjectCron("id", CRON, this::consumer));
 		delayQueueScheduler.debugPrint();
 		Thread.sleep(4000);
 		delayQueueScheduler.debugPrint();
@@ -50,15 +48,15 @@ class DelayQueueSchedulerCronTest {
 	}
 
 	// TODO enable ordering of equal cron-expressions
-    @Ignore
+    @Test
     void test_coninciding_ordered() throws InterruptedException {
         List<Integer> results = new ArrayList<>();
-        delayQueueScheduler.add(new TimerObjectCron(CRON, createNumberedConsumer(2, results)));
-        delayQueueScheduler.add(new TimerObjectCron(CRON, createNumberedConsumer(3, results)));
-        delayQueueScheduler.add(new TimerObjectCron(CRON, createNumberedConsumer(1, results)));
+        delayQueueScheduler.add(new TimerObjectCron("id2", CRON, createNumberedConsumer(2, results)));
+        delayQueueScheduler.add(new TimerObjectCron("id3", CRON, createNumberedConsumer(3, results)));
+        delayQueueScheduler.add(new TimerObjectCron("id1", CRON, createNumberedConsumer(1, results)));
 
         delayQueueScheduler.debugPrint();
-        Thread.sleep(4000);
+        Thread.sleep(3000);
         delayQueueScheduler.debugPrint();
 
         List<Integer> expected = new ArrayList<>();
@@ -67,7 +65,7 @@ class DelayQueueSchedulerCronTest {
     }
 
 	// TODO enable ordering of equal cron-expressions
-    @Ignore
+    /*@Ignore
     void test_timers_are_ordered() throws InterruptedException {
 	    TimerObjectCron timerObject1 = new TimerObjectCron((new CronParser(CronDefinitionBuilder.instanceDefinitionFor(CronType.QUARTZ))).parse("0/20 * * * * ?"), this::consumer);
 	    delayQueueScheduler.add(timerObject1);
@@ -83,7 +81,7 @@ class DelayQueueSchedulerCronTest {
 		    result.add(timerObject);
 	    });
 	    assertThat(result).containsExactly(timerObject3, timerObject2, timerObject1);
-    }
+    }*/
 
     private void consumer(Long time) {
         System.out.println("    time = " + time);
